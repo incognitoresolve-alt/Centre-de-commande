@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boris | Executive Hub</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&family=JetBrains+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,300;1,500&family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;600;800&family=Bebas+Neue&family=Space+Grotesk:wght@400;600&family=Cinzel:wght@400;600&family=Fraunces:ital,wght@0,400;0,700;1,300&family=Montserrat:wght@300;500;700&family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg:#0b0f19; --bg-card:rgba(17,24,39,0.60); --border:rgba(255,255,255,0.05);
+            --accent:#10b981; --font-main:'Plus Jakarta Sans',sans-serif; --font-head:'Plus Jakarta Sans',sans-serif;
+        }
+        .theme-slate-luxury { --bg:#0b0f19; --bg-card:rgba(17,24,39,0.60); --border:rgba(255,255,255,0.05); --accent:#10b981; --font-main:'Plus Jakarta Sans',sans-serif; --font-head:'Plus Jakarta Sans',sans-serif; }
+        .theme-midnight     { --bg:#0a0f1e; --bg-card:rgba(15,23,42,0.70); --border:#1e2d47; --accent:#38bdf8; --font-main:'Space Grotesk',sans-serif; --font-head:'Syne',sans-serif; }
+        .theme-old-money    { --bg:#0d110d; --bg-card:rgba(24,36,22,0.50); --border:rgba(212,175,55,0.15); --accent:#d4af37; --font-main:'Cormorant Garamond',serif; --font-head:'DM Serif Display',serif; }
+        .theme-noir-absolu  { --bg:#000000; --bg-card:#0a0a0a; --border:#1a1a1a; --accent:#ffffff; --font-main:'JetBrains Mono',monospace; --font-head:'Bebas Neue',monospace; }
+        .theme-imperial     { --bg:#0e0a1a; --bg-card:rgba(30,20,50,0.60); --border:rgba(180,130,255,0.15); --accent:#b482ff; --font-main:'Syne',sans-serif; --font-head:'Cinzel',serif; }
+        .theme-cyberpunk    { --bg:#050a0e; --bg-card:rgba(0,20,15,0.70); --border:rgba(0,255,170,0.12); --accent:#00ffaa; --font-main:'Montserrat',sans-serif; --font-head:'Fraunces',serif; }
+
+        body { font-family:var(--font-main); background-color:#070a12; color:#f3f4f6; overflow-x:hidden; }
+        h1   { font-family:var(--font-head); }
+
+        #preview-zone { background-color:var(--bg); transition:background 0.6s cubic-bezier(0.4,0,0.2,1); }
+
+        .custom-card { background-color:var(--bg-card); border:1px solid var(--border); backdrop-filter:blur(12px); transition:border-color 0.3s, transform 0.3s, box-shadow 0.3s; }
+        .custom-card:hover { border-color:var(--accent); transform:translateY(-3px); box-shadow:0 10px 30px -10px var(--accent); }
+
+        #admin-panel { transition:transform 0.4s cubic-bezier(0.2,1,0.2,1), opacity 0.3s ease; }
+        #admin-panel.panel-hidden { transform:translateX(-100%); opacity:0; pointer-events:none; }
+
+        .tab-content { display:none; }
+        .tab-content.active { display:block; }
+
+        #image-preview-container img { max-width:100%; border-radius:12px; border:1px solid rgba(255,255,255,0.1); margin-top:10px; }
+
+        .spinner { width:16px; height:16px; border:2px solid rgba(16,185,129,0.2); border-top-color:#10b981; border-radius:50%; animation:spin 0.7s linear infinite; display:inline-block; vertical-align:middle; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        /* ── MODAL CONFIRMATION ── */
+        #confirm-modal { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); align-items:center; justify-content:center; }
+        #confirm-modal.show { display:flex; }
+        #confirm-modal .modal-box { background:#0f1626; border:1px solid #1e293b; border-radius:20px; padding:28px; max-width:360px; width:90%; animation:modalIn 0.25s cubic-bezier(0.2,1,0.2,1); }
+        @keyframes modalIn { from { transform:scale(0.92) translateY(10px); opacity:0; } to { transform:scale(1) translateY(0); opacity:1; } }
+
+        /* ── MODAL NOTE ── */
+        #note-modal { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); align-items:center; justify-content:center; }
+        #note-modal.show { display:flex; }
+        #note-modal .modal-box { background:#0f1626; border:1px solid #1e293b; border-radius:20px; padding:28px; max-width:420px; width:90%; animation:modalIn 0.25s cubic-bezier(0.2,1,0.2,1); }
+
+        /* Badge appelé */
+        .badge-called { background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); color:#10b981; }
+        .badge-uncalled { background:rgba(100,116,139,0.08); border:1px solid rgba(100,116,139,0.2); color:#64748b; }
+
+        ::-webkit-scrollbar { width:4px; }
+        ::-webkit-scrollbar-track { background:transparent; }
+        ::-webkit-scrollbar-thumb { background:#1e293b; border-radius:4px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row antialiased">
+
+<!-- ════════════════ MODAL CONFIRMATION ════════════════ -->
+<div id="confirm-modal" role="dialog" aria-modal="true">
+    <div class="modal-box space-y-5">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-triangle-exclamation text-red-400"></i>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-white" id="confirm-title">Confirmer la suppression</p>
+                <p class="text-[10px] text-slate-500 mt-0.5" id="confirm-subtitle">Cette action est irréversible.</p>
+            </div>
+        </div>
+        <p class="text-[11px] text-slate-400 bg-slate-900/60 rounded-xl p-3" id="confirm-body"></p>
+        <div class="text-[10px] text-amber-400 bg-amber-900/10 border border-amber-800/20 rounded-xl p-3 font-mono">
+            ⚠ Confirme une seconde fois pour valider.
+        </div>
+        <div class="flex gap-3">
+            <button id="confirm-cancel" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold uppercase transition-colors">Annuler</button>
+            <button id="confirm-ok"     class="flex-1 py-3 rounded-xl bg-red-600/20 hover:bg-red-600/40 text-red-400 text-xs font-bold uppercase border border-red-800/30 transition-colors">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════ MODAL NOTE / APPEL ════════════════ -->
+<div id="note-modal" role="dialog" aria-modal="true">
+    <div class="modal-box space-y-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-xs font-bold text-white" id="note-modal-name">Contact</p>
+                <p class="text-[10px] text-emerald-500 font-mono" id="note-modal-phone"></p>
+            </div>
+            <button id="note-modal-close" class="text-slate-500 hover:text-white transition-colors"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- Statut appel -->
+        <div class="space-y-2">
+            <p class="text-[9px] text-slate-500 uppercase tracking-widest font-bold">Statut de l'appel</p>
+            <div class="flex gap-2">
+                <button id="btn-mark-called"    class="flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase transition-all border flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-phone-volume"></i> Appelé
+                </button>
+                <button id="btn-mark-uncalled"  class="flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase transition-all border flex items-center justify-center gap-2 bg-slate-900/40 border-slate-800 text-slate-500 hover:border-slate-600">
+                    <i class="fa-solid fa-phone-slash"></i> Non appelé
+                </button>
+            </div>
+            <div id="call-timestamp" class="text-[9px] text-slate-600 font-mono hidden"></div>
+        </div>
+
+        <!-- Note -->
+        <div class="space-y-2">
+            <p class="text-[9px] text-slate-500 uppercase tracking-widest font-bold">Note</p>
+            <textarea id="note-textarea" rows="4" placeholder="Ex: Rappeler mardi matin, intéressé par assurance groupe ASBL…" class="w-full bg-slate-900 border border-slate-800 focus:border-emerald-500/40 rounded-xl px-3 py-2 text-xs text-white outline-none resize-none transition-colors"></textarea>
+        </div>
+
+        <div class="flex gap-3">
+            <button id="note-cancel" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold uppercase transition-colors">Fermer</button>
+            <button id="note-save"   class="flex-1 py-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-bold uppercase border border-emerald-800/30 transition-colors">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Bouton ouverture panel -->
+<button id="open-admin-btn" class="fixed top-6 left-6 z-30 text-slate-400 hover:text-white p-2 rounded-lg bg-black/30 backdrop-blur-sm transition-colors" aria-label="Ouvrir panneau">
+    <i class="fa-solid fa-ellipsis-vertical text-xl"></i>
+</button>
+
+<!-- ════════════════ PANEL ADMIN ════════════════ -->
+<aside id="admin-panel" class="panel-hidden fixed inset-y-0 left-0 w-full md:max-w-lg bg-[#0f1626] border-r border-slate-800/60 flex flex-col z-40 shadow-2xl">
+
+    <div class="p-6 border-b border-slate-800/80 flex justify-between items-center bg-[#0b101c]">
+        <div>
+            <h2 class="text-[10px] font-bold text-white uppercase tracking-widest">Boris Executive Hub</h2>
+            <p class="text-[10px] text-emerald-500 font-mono mt-1" id="system-status">Système V18 — Prêt</p>
+        </div>
+        <button id="close-admin-btn" class="text-slate-500 hover:text-white transition-colors" aria-label="Fermer"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+
+    <nav class="flex border-b border-slate-800/80 bg-[#0d1322] text-[9px] font-bold uppercase tracking-widest overflow-x-auto">
+        <button data-tab="tab-recs"   class="tab-nav-btn flex-1 py-4 px-2 border-b-2 border-emerald-500 text-white whitespace-nowrap">IA Vision</button>
+        <button data-tab="tab-agenda" class="tab-nav-btn flex-1 py-4 px-2 border-b-2 border-transparent text-slate-400 whitespace-nowrap">Agenda</button>
+        <button data-tab="tab-notes"  class="tab-nav-btn flex-1 py-4 px-2 border-b-2 border-transparent text-slate-400 whitespace-nowrap">Notes</button>
+        <button data-tab="tab-links"  class="tab-nav-btn flex-1 py-4 px-2 border-b-2 border-transparent text-slate-400 whitespace-nowrap">Services</button>
+        <button data-tab="tab-style"  class="tab-nav-btn flex-1 py-4 px-2 border-b-2 border-transparent text-slate-400 whitespace-nowrap">Style</button>
+    </nav>
+
+    <div class="flex-1 overflow-y-auto p-6 space-y-6 bg-[#0f1626]">
+
+        <!-- IA VISION -->
+        <div id="tab-recs" class="tab-content active space-y-5">
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4">
+                <p class="text-[10px] text-slate-500">Charge une photo (WhatsApp, carte de visite…) — l'IA extrait les contacts automatiquement.</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl p-3 text-center cursor-pointer transition-colors">
+                        <i class="fa-solid fa-image text-slate-500 block mb-1"></i>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Charger image</span>
+                        <input type="file" id="ai-image-input" accept="image/*" class="hidden">
+                    </label>
+                    <button id="btn-api" onclick="runVisionAnalysis()" class="bg-emerald-600/20 border border-emerald-500/30 text-emerald-500 rounded-xl p-3 text-[10px] font-bold uppercase transition-all hover:bg-emerald-600/30 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Analyser IA
+                    </button>
+                </div>
+                <div id="image-preview-container" class="hidden"><img id="preview-img-tag" src="#" alt="Aperçu"></div>
+            </div>
+
+            <!-- Filtre rapide -->
+            <div class="flex gap-2">
+                <button onclick="setFilter('all')"     id="filter-all"     class="filter-btn flex-1 py-2 rounded-xl text-[9px] font-bold uppercase bg-slate-800 text-white border border-slate-700">Tous</button>
+                <button onclick="setFilter('called')"  id="filter-called"  class="filter-btn flex-1 py-2 rounded-xl text-[9px] font-bold uppercase bg-slate-900 text-slate-500 border border-slate-800">Appelés</button>
+                <button onclick="setFilter('pending')" id="filter-pending" class="filter-btn flex-1 py-2 rounded-xl text-[9px] font-bold uppercase bg-slate-900 text-slate-500 border border-slate-800">En attente</button>
+            </div>
+
+            <!-- Ajout manuel -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
+                <p class="text-[9px] text-slate-500 uppercase tracking-widest font-bold">Ajout manuel</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <input id="manual-name"  type="text" placeholder="Nom"               class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-emerald-500/40 transition-colors">
+                    <input id="manual-phone" type="text" placeholder="Tél / email"       class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-emerald-500/40 transition-colors" onkeydown="if(event.key==='Enter')addContactManual()">
+                </div>
+                <button onclick="addContactManual()" class="w-full py-2 bg-emerald-600/10 text-emerald-400 text-[10px] font-bold rounded-xl uppercase tracking-widest hover:bg-emerald-600/20 transition-colors">
+                    + Ajouter contact
+                </button>
+            </div>
+
+            <div id="contacts-display-list" class="space-y-2"></div>
+        </div>
+
+        <!-- AGENDA -->
+        <div id="tab-agenda" class="tab-content space-y-4">
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4">
+                <input type="text" id="agenda-url-input" placeholder="Lien Embed Google Agenda" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-emerald-500/40 transition-colors">
+                <button onclick="saveAgenda()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold py-3 rounded-xl uppercase transition-colors">Lier Agenda</button>
+                <iframe id="agenda-iframe" src="" class="w-full h-80 rounded-xl bg-white hidden mt-4" title="Google Agenda"></iframe>
+            </div>
+        </div>
+
+        <!-- NOTES GLOBALES -->
+        <div id="tab-notes" class="tab-content space-y-4">
+            <!-- Nouvelle note -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-3">
+                <p class="text-[9px] text-slate-500 uppercase tracking-widest font-bold">Nouvelle note</p>
+                <input id="note-title-input" type="text" placeholder="Titre (ex: Réunion ASBL, Rappel client…)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-emerald-500/40 transition-colors">
+                <textarea id="note-content-input" rows="4" placeholder="Contenu de la note…" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-emerald-500/40 resize-none transition-colors"></textarea>
+                <div class="flex gap-2">
+                    <select id="note-tag-input" class="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white outline-none">
+                        <option value="">— Aucun tag —</option>
+                        <option value="suivi">📞 Suivi client</option>
+                        <option value="rdv">📅 Rendez-vous</option>
+                        <option value="asbl">🏢 ASBL</option>
+                        <option value="ovb">🤝 OVB</option>
+                        <option value="perso">⭐ Personnel</option>
+                        <option value="urgent">🔴 Urgent</option>
+                    </select>
+                    <button onclick="addGlobalNote()" class="px-4 py-2 bg-emerald-600/20 text-emerald-400 text-[10px] font-bold rounded-xl uppercase hover:bg-emerald-600/30 transition-colors border border-emerald-800/30">
+                        + Ajouter
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filtre tags -->
+            <div class="flex gap-1.5 flex-wrap">
+                <button onclick="setNoteFilter('')"       id="nf-all"   class="note-filter-btn px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase bg-slate-800 text-white border border-slate-700">Toutes</button>
+                <button onclick="setNoteFilter('suivi')"  id="nf-suivi" class="note-filter-btn px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase bg-slate-900 text-slate-500 border border-slate-800">📞 Suivi</button>
+                <button onclick="setNoteFilter('rdv')"    id="nf-rdv"   class="note-filter-btn px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase bg-slate-900 text-slate-500 border border-slate-800">📅 RDV</button>
+                <button onclick="setNoteFilter('asbl')"   id="nf-asbl"  class="note-filter-btn px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase bg-slate-900 text-slate-500 border border-slate-800">🏢 ASBL</button>
+                <button onclick="setNoteFilter('urgent')" id="nf-urgent" class="note-filter-btn px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase bg-slate-900 text-slate-500 border border-slate-800">🔴 Urgent</button>
+            </div>
+
+            <div id="global-notes-list" class="space-y-3"></div>
+        </div>
+
+        <!-- SERVICES -->
+        <div id="tab-links" class="tab-content space-y-4">
+            <div id="links-editor-list" class="space-y-3"></div>
+            <button onclick="addLink()" class="w-full py-3 bg-emerald-600/10 text-emerald-400 text-[10px] font-bold rounded-xl uppercase tracking-widest hover:bg-emerald-600/20 transition-colors">+ Nouveau Service</button>
+        </div>
+
+        <!-- STYLE -->
+        <div id="tab-style" class="tab-content space-y-6">
+            <div class="space-y-2">
+                <label class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Thème & Typographie</label>
+                <select id="theme-selector" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none focus:border-emerald-500/40 transition-colors">
+                    <option value="theme-slate-luxury">Slate Luxury (Foncé Institutionnel)</option>
+                    <option value="theme-midnight">Midnight (Bleu Nuit Pro)</option>
+                    <option value="theme-old-money">Old Money (Dark British & Or Héraldique)</option>
+                    <option value="theme-noir-absolu">Noir Absolu (Minimalisme Radical)</option>
+                    <option value="theme-imperial">Imperial (Violet & Cinzel)</option>
+                    <option value="theme-cyberpunk">Cyberpunk (Néon & Futuriste)</option>
+                </select>
+                <!-- Aperçu typo -->
+                <div id="font-preview" class="bg-slate-900/50 border border-slate-800 rounded-xl p-4 space-y-1">
+                    <div id="fp-head" class="text-lg text-white">Boris Executive</div>
+                    <div id="fp-body" class="text-[10px] text-slate-500">Conseil & Prévoyance — Liège 2026</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="exportData()" class="text-[10px] font-bold bg-slate-800 hover:bg-slate-700 py-3 rounded-xl uppercase transition-colors"><i class="fa-solid fa-download mr-1"></i> Export</button>
+                <button onclick="importData()" class="text-[10px] font-bold bg-slate-800 hover:bg-slate-700 py-3 rounded-xl uppercase transition-colors"><i class="fa-solid fa-upload mr-1"></i> Import</button>
+            </div>
+            <button onclick="confirmClearContacts()" class="w-full text-[10px] font-bold bg-red-900/20 text-red-400 hover:bg-red-900/40 py-3 rounded-xl uppercase transition-colors border border-red-900/20">
+                <i class="fa-solid fa-trash mr-1"></i> Vider tous les contacts
+            </button>
+        </div>
+    </div>
+</aside>
+
+<!-- ════════════════ PREVIEW PRINCIPALE ════════════════ -->
+<section id="preview-zone" class="flex-1 min-h-screen flex flex-col justify-between p-10 sm:p-20 theme-slate-luxury w-full">
+    <div class="max-w-xl w-full mx-auto pt-10 text-center">
+        <div class="inline-flex items-center justify-center w-24 h-24 rounded-full border border-white/5 mb-8 text-3xl font-light shadow-2xl bg-white/[0.02] backdrop-blur-md select-none">B</div>
+        <h1 class="text-4xl font-semibold tracking-[0.2em] text-white mb-24 italic">Boris</h1>
+        <div id="preview-links-container" class="space-y-6 text-left"></div>
+    </div>
+    <footer class="text-center text-[10px] opacity-20 uppercase tracking-[0.5em] pt-20 font-mono font-medium">© 2026 Boris | Executive Command</footer>
+</section>
+
+<script>
+// ══════════════════════════════════════════
+//  ÉTAT & PERSISTANCE
+// ══════════════════════════════════════════
+const STORAGE_KEY = 'boris_v18';
+const LEGACY_KEY  = 'boris_v17';
+const defaultState = { theme:'theme-slate-luxury', agendaUrl:'', links:[], contacts:[], globalNotes:[] };
+
+let appState = (() => {
+    try {
+        const current = localStorage.getItem(STORAGE_KEY);
+        if (current) return { ...defaultState, ...JSON.parse(current) };
+        // Migration depuis v17
+        const legacy = localStorage.getItem(LEGACY_KEY);
+        if (legacy) {
+            const migrated = { ...defaultState, ...JSON.parse(legacy) };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+            return migrated;
+        }
+        return { ...defaultState };
+    }
+    catch { return { ...defaultState }; }
+})();
+
+let _idCounter = Date.now();
+function genId() { return ++_idCounter; }
+
+// Sync le compteur avec les IDs déjà présents en localStorage pour éviter collisions
+(function syncIdCounter() {
+    const allIds = [
+        ...(appState.contacts||[]),
+        ...(appState.links||[]),
+        ...(appState.globalNotes||[])
+    ].map(x => x.id || 0);
+    if (allIds.length) _idCounter = Math.max(_idCounter, ...allIds);
+})();
+
+function persist() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); }
+    catch(e) { setStatus('Erreur sauvegarde', true); }
+}
+
+function save() {
+    persist();
+    renderAll();
+}
+
+// ══════════════════════════════════════════
+//  UTILITAIRES
+// ══════════════════════════════════════════
+function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function setStatus(msg, isError=false) {
+    const el = document.getElementById('system-status');
+    el.textContent = msg;
+    el.style.color = isError ? '#f87171' : '#10b981';
+}
+
+function debounce(fn, d=400) { let t; return (...a) => { clearTimeout(t); t=setTimeout(()=>fn(...a),d); }; }
+
+function fmtDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleDateString('fr-BE',{day:'2-digit',month:'short'}) + ' à ' + d.toLocaleTimeString('fr-BE',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ══════════════════════════════════════════
+//  FILTRE CONTACTS
+// ══════════════════════════════════════════
+let activeFilter = 'all';
+
+window.setFilter = (f) => {
+    activeFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => {
+        const isActive = b.id === 'filter-' + f;
+        b.classList.toggle('bg-slate-800', isActive);
+        b.classList.toggle('text-white',   isActive);
+        b.classList.toggle('border-slate-700', isActive);
+        b.classList.toggle('bg-slate-900', !isActive);
+        b.classList.toggle('text-slate-500', !isActive);
+        b.classList.toggle('border-slate-800', !isActive);
+    });
+    renderContacts();
+};
+
+// ══════════════════════════════════════════
+//  MODAL CONFIRMATION — DOUBLE VALIDATION
+// ══════════════════════════════════════════
+let _confirmPending = null;
+let _confirmStep    = 0;
+
+function showConfirm(title, subtitle, body, onConfirm) {
+    _confirmPending = onConfirm;
+    _confirmStep    = 0;
+    document.getElementById('confirm-title').textContent    = title;
+    document.getElementById('confirm-subtitle').textContent = subtitle;
+    document.getElementById('confirm-body').textContent     = body;
+    const okBtn = document.getElementById('confirm-ok');
+    okBtn.textContent = 'Supprimer';
+    okBtn.classList.remove('bg-red-600/50','border-red-600/60');
+    document.getElementById('confirm-modal').classList.add('show');
+}
+
+document.getElementById('confirm-ok').addEventListener('click', () => {
+    if (_confirmStep === 0) {
+        _confirmStep = 1;
+        const okBtn = document.getElementById('confirm-ok');
+        okBtn.textContent = '⚠ Confirmer définitivement';
+        okBtn.classList.add('bg-red-600/50','border-red-600/60');
+        document.getElementById('confirm-subtitle').textContent = 'Dernière chance — clique encore pour confirmer.';
+        return;
+    }
+    document.getElementById('confirm-modal').classList.remove('show');
+    if (_confirmPending) { _confirmPending(); _confirmPending = null; }
+    _confirmStep = 0;
+});
+
+document.getElementById('confirm-cancel').addEventListener('click', () => {
+    document.getElementById('confirm-modal').classList.remove('show');
+    _confirmPending = null; _confirmStep = 0;
+    // Reset bouton
+    const okBtn = document.getElementById('confirm-ok');
+    okBtn.textContent = 'Supprimer';
+    okBtn.classList.remove('bg-red-600/50','border-red-600/60');
+});
+
+// ══════════════════════════════════════════
+//  MODAL NOTE / APPEL
+// ══════════════════════════════════════════
+let _noteContactId = null;
+
+window.openNoteModal = (id) => {
+    id = parseInt(id, 10);
+    const c = appState.contacts.find(x => x.id === id);
+    if (!c) return;
+    _noteContactId = id;
+
+    document.getElementById('note-modal-name').textContent  = c.name;
+    document.getElementById('note-modal-phone').textContent = c.phone || '';
+    document.getElementById('note-textarea').value          = c.note || '';
+
+    // Statut appel
+    refreshCallButtons(c.called);
+    const ts = document.getElementById('call-timestamp');
+    if (c.calledAt) { ts.textContent = 'Appelé le ' + fmtDate(c.calledAt); ts.classList.remove('hidden'); }
+    else { ts.classList.add('hidden'); }
+
+    document.getElementById('note-modal').classList.add('show');
+};
+
+function refreshCallButtons(called) {
+    const btnCalled   = document.getElementById('btn-mark-called');
+    const btnUncalled = document.getElementById('btn-mark-uncalled');
+    if (called) {
+        btnCalled.className   = 'flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase transition-all border flex items-center justify-center gap-2 bg-emerald-600/20 border-emerald-500/40 text-emerald-400';
+        btnUncalled.className = 'flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase transition-all border flex items-center justify-center gap-2 bg-slate-900/40 border-slate-800 text-slate-500 hover:border-slate-600';
+    } else {
+        btnCalled.className   = 'flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase transition-all border flex items-center justify-center gap-2 bg-slate-900/40 border-slate-800 text-slate-500 hover:border-slate-600';
+        btnUncalled.className = 'flex-1 py-2.5 rounded-xl text-[10px] font-bold uppercase transition-all border flex items-center justify-center gap-2 bg-slate-700/20 border-slate-600/40 text-slate-400';
+    }
+}
+
+document.getElementById('btn-mark-called').addEventListener('click', () => {
+    const c = appState.contacts.find(x => x.id === _noteContactId);
+    if (!c) return;
+    c.called   = true;
+    c.calledAt = new Date().toISOString();
+    refreshCallButtons(true);
+    const ts = document.getElementById('call-timestamp');
+    ts.textContent = 'Appelé le ' + fmtDate(c.calledAt);
+    ts.classList.remove('hidden');
+    persist(); // persist sans re-render complet
+});
+
+document.getElementById('btn-mark-uncalled').addEventListener('click', () => {
+    const c = appState.contacts.find(x => x.id === _noteContactId);
+    if (!c) return;
+    c.called   = false;
+    c.calledAt = null;
+    refreshCallButtons(false);
+    document.getElementById('call-timestamp').classList.add('hidden');
+    persist();
+});
+
+document.getElementById('note-save').addEventListener('click', () => {
+    const c = appState.contacts.find(x => x.id === _noteContactId);
+    if (c) { c.note = document.getElementById('note-textarea').value.trim(); }
+    document.getElementById('note-modal').classList.remove('show');
+    setStatus('Note enregistrée ✓');
+    save();
+});
+
+['note-cancel','note-modal-close'].forEach(id => {
+    document.getElementById(id).addEventListener('click', () => {
+        // Sauvegarde le statut appel même si on ferme sans "Enregistrer"
+        const c = appState.contacts.find(x => x.id === _noteContactId);
+        if (c) persist(); // persist uniquement, pas de renderAll
+        document.getElementById('note-modal').classList.remove('show');
+    });
+});
+
+// ══════════════════════════════════════════
+//  IA VISION
+// ══════════════════════════════════════════
+window.runVisionAnalysis = async () => {
+    const fileInput = document.getElementById('ai-image-input');
+    const btn = document.getElementById('btn-api');
+    if (!fileInput.files[0]) { alert("Charge d'abord une image."); return; }
+    btn.innerHTML = '<span class="spinner"></span>'; btn.disabled = true;
+    setStatus("Analyse IA en cours…");
+
+    const reader = new FileReader();
+    reader.readAsDataURL(fileInput.files[0]);
+    reader.onload = async (ev) => {
+        const [meta, base64Data] = ev.target.result.split(',');
+        const mediaType = meta.match(/data:([^;]+)/)?.[1] || 'image/jpeg';
+        try {
+            const res  = await fetch('https://api.anthropic.com/v1/messages', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({
+                    model:'claude-sonnet-4-20250514', max_tokens:1000,
+                    messages:[{ role:'user', content:[
+                        { type:'image', source:{ type:'base64', media_type:mediaType, data:base64Data } },
+                        { type:'text',  text:`Extrais TOUS les contacts visibles (noms, tél, emails). Réponds UNIQUEMENT en JSON valide, sans markdown :\n{"contacts":[{"name":"Nom","phone":"Tél/email"}]}` }
+                    ]}]
+                })
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data    = await res.json();
+            const rawText = data.content?.find(b=>b.type==='text')?.text || '{}';
+            let parsed;
+            try { parsed = JSON.parse(rawText.replace(/```json|```/g,'').trim()); }
+            catch { throw new Error('JSON non parseable'); }
+            const extracted = Array.isArray(parsed.contacts) ? parsed.contacts : [];
+            if (!extracted.length) { setStatus('Aucun contact détecté', true); }
+            else {
+                extracted.forEach(c => appState.contacts.push({ id:genId(), name:(c.name||'Inconnu').trim(), phone:(c.phone||'').trim(), called:false, calledAt:null, note:'' }));
+                setStatus(`${extracted.length} contact(s) extrait(s) ✓`); save();
+            }
+        } catch(e) { console.error(e); setStatus('Erreur API — '+e.message, true); }
+        finally { btn.innerHTML='<i class="fa-solid fa-wand-magic-sparkles"></i> Analyser IA'; btn.disabled=false; }
+    };
+    reader.onerror = () => { setStatus('Erreur lecture fichier', true); btn.innerHTML='<i class="fa-solid fa-wand-magic-sparkles"></i> Analyser IA'; btn.disabled=false; };
+};
+
+// ══════════════════════════════════════════
+//  CONTACTS
+// ══════════════════════════════════════════
+window.addContactManual = () => {
+    const name  = document.getElementById('manual-name').value.trim();
+    const phone = document.getElementById('manual-phone').value.trim();
+    if (!name && !phone) return;
+    appState.contacts.push({ id:genId(), name:name||'Sans nom', phone, called:false, calledAt:null, note:'' });
+    document.getElementById('manual-name').value  = '';
+    document.getElementById('manual-phone').value = '';
+    document.getElementById('manual-name').focus();
+    setStatus('Contact ajouté ✓'); save();
+};
+
+window.deleteContact = (id) => {
+    id = parseInt(id, 10);
+    const c = appState.contacts.find(x => x.id === id);
+    if (!c) return;
+    showConfirm(
+        'Supprimer ce contact',
+        'Action irréversible.',
+        `${c.name}${c.phone ? ' · ' + c.phone : ''}`,
+        () => {
+            appState.contacts = appState.contacts.filter(x => x.id !== id);
+            setStatus('Contact supprimé'); save();
+        }
+    );
+};
+
+window.confirmClearContacts = () => {
+    if (!appState.contacts.length) return;
+    showConfirm(
+        'Vider tous les contacts',
+        'Tous les contacts seront supprimés.',
+        `${appState.contacts.length} contact(s) seront effacés définitivement.`,
+        () => { appState.contacts=[]; setStatus('Contacts supprimés'); save(); }
+    );
+};
+
+// ══════════════════════════════════════════
+//  LIENS
+// ══════════════════════════════════════════
+window.addLink = () => { appState.links.push({ id:genId(), title:'Nouveau Service', url:'https://' }); save(); };
+
+window.deleteLink = (id) => {
+    id = parseInt(id, 10);
+    const l = appState.links.find(x => x.id === id);
+    if (!l) return;
+    showConfirm('Supprimer ce service', 'Action irréversible.', l.title, () => {
+        appState.links = appState.links.filter(x => x.id !== id);
+        setStatus('Service supprimé'); save();
+    });
+};
+
+const debouncedSave = debounce(() => save(), 500);
+window.updateLink = (id, field, val) => { id=parseInt(id,10); const l=appState.links.find(x=>x.id===id); if(l){l[field]=val; debouncedSave();} };
+
+// ══════════════════════════════════════════
+//  AGENDA
+// ══════════════════════════════════════════
+window.saveAgenda = () => { appState.agendaUrl=document.getElementById('agenda-url-input').value.trim(); setStatus('Agenda lié ✓'); save(); };
+
+// ══════════════════════════════════════════
+//  EXPORT / IMPORT
+// ══════════════════════════════════════════
+window.exportData = () => {
+    const blob = new Blob([JSON.stringify(appState,null,2)],{type:'application/json'});
+    const url  = URL.createObjectURL(blob);
+    const date = new Date().toISOString().slice(0,10);
+    const a    = document.createElement('a'); a.href=url; a.download=`boris-hub-backup-${date}.json`; a.click();
+    URL.revokeObjectURL(url); setStatus('Backup exporté ✓');
+};
+window.importData = () => {
+    const input = document.createElement('input'); input.type='file'; input.accept='.json';
+    input.onchange = e => {
+        const file=e.target.files[0]; if(!file) return;
+        const r=new FileReader();
+        r.onload = ev => {
+            try { appState={...defaultState,...JSON.parse(ev.target.result)}; setStatus('Import réussi ✓'); save(); }
+            catch { setStatus('Fichier JSON invalide', true); }
+        };
+        r.readAsText(file);
+    };
+    input.click();
+};
+
+// ══════════════════════════════════════════
+//  NOTES GLOBALES
+// ══════════════════════════════════════════
+let activeNoteFilter = '';
+
+const TAG_LABELS = { suivi:'📞 Suivi', rdv:'📅 RDV', asbl:'🏢 ASBL', ovb:'🤝 OVB', perso:'⭐ Perso', urgent:'🔴 Urgent' };
+const TAG_COLORS = {
+    suivi:'bg-blue-900/20 text-blue-400 border-blue-800/30',
+    rdv:'bg-violet-900/20 text-violet-400 border-violet-800/30',
+    asbl:'bg-amber-900/20 text-amber-400 border-amber-800/30',
+    ovb:'bg-teal-900/20 text-teal-400 border-teal-800/30',
+    perso:'bg-pink-900/20 text-pink-400 border-pink-800/30',
+    urgent:'bg-red-900/20 text-red-400 border-red-800/30',
+};
+
+window.setNoteFilter = (tag) => {
+    activeNoteFilter = tag;
+    document.querySelectorAll('.note-filter-btn').forEach(b => {
+        const active = (tag===''&&b.id==='nf-all')||(b.id==='nf-'+tag);
+        b.classList.toggle('bg-slate-800',active); b.classList.toggle('text-white',active); b.classList.toggle('border-slate-700',active);
+        b.classList.toggle('bg-slate-900',!active); b.classList.toggle('text-slate-500',!active); b.classList.toggle('border-slate-800',!active);
+    });
+    renderGlobalNotes();
+};
+
+window.addGlobalNote = () => {
+    const title   = document.getElementById('note-title-input').value.trim();
+    const content = document.getElementById('note-content-input').value.trim();
+    const tag     = document.getElementById('note-tag-input').value;
+    if (!title && !content) return;
+    if (!appState.globalNotes) appState.globalNotes = [];
+    appState.globalNotes.unshift({ id:genId(), title:title||'Sans titre', content, tag, createdAt:new Date().toISOString(), pinned:false });
+    document.getElementById('note-title-input').value='';
+    document.getElementById('note-content-input').value='';
+    document.getElementById('note-tag-input').value='';
+    setStatus('Note ajoutée ✓'); save();
+};
+
+window.togglePinNote = (id) => {
+    id=parseInt(id,10);
+    const n=appState.globalNotes&&appState.globalNotes.find(x=>x.id===id);
+    if(n){n.pinned=!n.pinned; persist(); renderGlobalNotes();}
+};
+
+window.deleteGlobalNote = (id) => {
+    id=parseInt(id,10);
+    const n=appState.globalNotes&&appState.globalNotes.find(x=>x.id===id);
+    if(!n) return;
+    showConfirm('Supprimer cette note','Action irréversible.',n.title,()=>{
+        appState.globalNotes=appState.globalNotes.filter(x=>x.id!==id);
+        setStatus('Note supprimée'); save();
+    });
+};
+
+window.editNoteInline = (id) => {
+    id=parseInt(id,10);
+    const contentEl=document.getElementById('nc-'+id);
+    if(!contentEl) return;
+    const editing=contentEl.getAttribute('contenteditable')==='true';
+    if(editing){
+        const n=appState.globalNotes&&appState.globalNotes.find(x=>x.id===id);
+        if(n) n.content=contentEl.innerText.trim();
+        contentEl.removeAttribute('contenteditable');
+        contentEl.classList.remove('ring-1','ring-emerald-500/30','rounded-lg','px-1');
+        setStatus('Note modifiée ✓'); persist();
+    } else {
+        contentEl.setAttribute('contenteditable','true');
+        contentEl.classList.add('ring-1','ring-emerald-500/30','rounded-lg','px-1');
+        contentEl.focus();
+        const range=document.createRange(); range.selectNodeContents(contentEl); range.collapse(false);
+        const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    }
+};
+
+function renderGlobalNotes(){
+    if(!appState.globalNotes) appState.globalNotes=[];
+    const notes=[...appState.globalNotes]
+        .filter(n=>!activeNoteFilter||n.tag===activeNoteFilter)
+        .sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
+    const container=document.getElementById('global-notes-list');
+    if(!container) return;
+    container.innerHTML=notes.length
+        ? notes.map(n=>{
+            const tc=n.tag&&TAG_COLORS[n.tag]?TAG_COLORS[n.tag]:'';
+            const tl=n.tag?TAG_LABELS[n.tag]||n.tag:'';
+            return `
+            <div class="bg-slate-950 border ${n.pinned?'border-emerald-900/40':'border-slate-800'} rounded-2xl p-4 space-y-2 group transition-colors">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-1.5">
+                            ${n.pinned?'<i class="fa-solid fa-thumbtack text-emerald-500 text-[9px]"></i>':''}
+                            <span class="text-[11px] font-bold text-white truncate">${esc(n.title)}</span>
+                        </div>
+                        <div class="text-[9px] text-slate-600 font-mono mt-0.5">${fmtDate(n.createdAt)}</div>
+                    </div>
+                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                        <button onclick="togglePinNote(${n.id})"    class="p-1.5 rounded-lg ${n.pinned?'text-emerald-400':'text-slate-600 hover:text-slate-300'} transition-colors" title="${n.pinned?'Désépingler':'Épingler'}"><i class="fa-solid fa-thumbtack text-xs"></i></button>
+                        <button onclick="editNoteInline(${n.id})"   class="p-1.5 rounded-lg text-slate-600 hover:text-white transition-colors" title="Modifier"><i class="fa-solid fa-pen text-xs"></i></button>
+                        <button onclick="deleteGlobalNote(${n.id})" class="p-1.5 rounded-lg text-slate-700 hover:text-red-400 transition-colors" title="Supprimer"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    </div>
+                </div>
+                ${tl?`<span class="inline-block text-[8px] px-2 py-0.5 rounded-full border font-bold uppercase ${tc}">${tl}</span>`:''}
+                <div id="nc-${n.id}" class="text-[10px] text-slate-400 leading-relaxed whitespace-pre-wrap break-words outline-none min-h-[1em]">${esc(n.content)}</div>
+            </div>`;
+          }).join('')
+        : `<p class="text-[10px] text-slate-600 text-center py-6">${activeNoteFilter?'Aucune note avec ce tag.':'Aucune note. Crée-en une ci-dessus.'}</p>`;
+}
+
+// ══════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════
+const THEME_FONTS = {
+    'theme-slate-luxury': { head:"'Plus Jakarta Sans',sans-serif",  body:"'Plus Jakarta Sans',sans-serif" },
+    'theme-midnight':     { head:"'Syne',sans-serif",               body:"'Space Grotesk',sans-serif" },
+    'theme-old-money':    { head:"'DM Serif Display',serif",        body:"'Cormorant Garamond',serif" },
+    'theme-noir-absolu':  { head:"'Bebas Neue',monospace",          body:"'JetBrains Mono',monospace" },
+    'theme-imperial':     { head:"'Cinzel',serif",                  body:"'Syne',sans-serif" },
+    'theme-cyberpunk':    { head:"'Fraunces',serif",                body:"'Montserrat',sans-serif" },
+};
+
+function renderContacts() {
+    const all     = appState.contacts;
+    const called  = all.filter(c=>c.called);
+    const pending = all.filter(c=>!c.called);
+
+    // Mise à jour labels filtres avec compteurs
+    const fb = { all, called, pending };
+    const labels = { all:'Tous', called:'Appelés', pending:'En attente' };
+    Object.entries(fb).forEach(([k,arr])=>{
+        const btn = document.getElementById('filter-'+k);
+        if(btn) btn.textContent = `${labels[k]} (${arr.length})`;
+    });
+
+    const filtered = activeFilter==='called' ? called : activeFilter==='pending' ? pending : all;
+    const html = filtered.length
+        ? filtered.map(c => {
+            const hasnote = c.note && c.note.trim().length > 0;
+            return `
+            <div class="bg-slate-900/50 border ${c.called ? 'border-emerald-900/40' : 'border-slate-800'} rounded-xl overflow-hidden transition-colors">
+                <div class="p-3 flex items-center gap-3">
+                    <!-- Bouton statut appel -->
+                    <button onclick="openNoteModal(${c.id})"
+                        class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all ${c.called ? 'bg-emerald-600/20 text-emerald-400' : 'bg-slate-800/80 text-slate-600 hover:text-slate-400'}"
+                        title="${c.called ? 'Appelé — cliquer pour modifier' : 'Non appelé — cliquer pour noter'}">
+                        <i class="fa-solid ${c.called ? 'fa-phone-volume' : 'fa-phone'} text-xs"></i>
+                    </button>
+                    <!-- Infos contact -->
+                    <div class="flex-1 min-w-0 cursor-pointer" onclick="openNoteModal(${c.id})">
+                        <div class="text-[11px] text-white font-semibold truncate">${esc(c.name)}</div>
+                        <div class="text-[10px] font-mono truncate ${c.called ? 'text-emerald-500' : 'text-slate-500'}">${esc(c.phone)}</div>
+                        ${c.calledAt ? `<div class="text-[9px] text-slate-600 mt-0.5">${fmtDate(c.calledAt)}</div>` : ''}
+                    </div>
+                    <!-- Badge note + action -->
+                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                        ${hasnote ? `<span class="text-[8px] px-2 py-0.5 rounded-full bg-amber-900/20 text-amber-400 border border-amber-800/20 font-bold uppercase" title="${esc(c.note)}">Note</span>` : ''}
+                        <button onclick="openNoteModal(${c.id})" class="text-slate-600 hover:text-white p-1.5 transition-colors" title="Voir / modifier"><i class="fa-solid fa-pen-to-square text-xs"></i></button>
+                        <button onclick="deleteContact(${c.id})" class="text-slate-700 hover:text-red-400 p-1.5 transition-colors" title="Supprimer"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    </div>
+                </div>
+                ${hasnote ? `<div class="px-3 pb-2.5 text-[9px] text-slate-500 border-t border-slate-800/50 pt-2 italic line-clamp-1">${esc(c.note)}</div>` : ''}
+            </div>`;
+          }).join('')
+        : `<p class="text-[10px] text-slate-600 text-center py-6">
+               ${activeFilter!=='all' ? 'Aucun contact dans cette catégorie.' : 'Aucun contact. Analyse une image ou ajoute manuellement.'}
+           </p>`;
+    document.getElementById('contacts-display-list').innerHTML = html;
+}
+
+function renderAll() {
+    // Thème
+    const zone = document.getElementById('preview-zone');
+    zone.className = `flex-1 min-h-screen flex flex-col justify-between p-10 sm:p-20 ${esc(appState.theme)} w-full transition-all duration-500`;
+
+    // Aperçu typo
+    const fonts = THEME_FONTS[appState.theme] || THEME_FONTS['theme-slate-luxury'];
+    document.getElementById('fp-head').style.fontFamily = fonts.head;
+    document.getElementById('fp-body').style.fontFamily = fonts.body;
+
+    // Preview liens
+    document.getElementById('preview-links-container').innerHTML = appState.links.map(l => `
+        <a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer" class="custom-card p-7 rounded-3xl block group">
+            <div class="flex justify-between items-center">
+                <div class="text-white font-medium">${esc(l.title)}</div>
+                <i class="fa-solid fa-arrow-right text-white/20 group-hover:text-white transition-colors"></i>
+            </div>
+        </a>`).join('');
+
+    // Éditeur liens
+    document.getElementById('links-editor-list').innerHTML = appState.links.map(l => `
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-2 relative">
+            <button onclick="deleteLink(${l.id})" class="absolute top-4 right-4 text-slate-600 hover:text-red-400 transition-colors" aria-label="Supprimer"><i class="fa-solid fa-trash-can"></i></button>
+            <input type="text"  oninput="updateLink(${l.id},'title',this.value)" value="${esc(l.title)}" placeholder="Titre" class="w-full bg-slate-900 border border-transparent focus:border-emerald-500/30 text-xs text-white p-2 rounded outline-none transition-colors">
+            <input type="url"   oninput="updateLink(${l.id},'url',this.value)"   value="${esc(l.url)}"   placeholder="https://..." class="w-full bg-slate-900 border border-transparent focus:border-emerald-500/30 text-[10px] text-slate-400 p-2 rounded outline-none transition-colors">
+        </div>`).join('');
+
+    // Contacts
+    renderContacts();
+
+    // Notes globales
+    renderGlobalNotes();
+
+    // Agenda
+    const frame = document.getElementById('agenda-iframe');
+    if (appState.agendaUrl) { frame.src=appState.agendaUrl; frame.classList.remove('hidden'); }
+    else { frame.classList.add('hidden'); }
+
+    // Sync
+    document.getElementById('theme-selector').value    = appState.theme;
+    document.getElementById('agenda-url-input').value  = appState.agendaUrl;
+}
+
+// ══════════════════════════════════════════
+//  NAVIGATION ONGLETS
+// ══════════════════════════════════════════
+document.querySelectorAll('.tab-nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById(btn.dataset.tab).classList.add('active');
+        document.querySelectorAll('.tab-nav-btn').forEach(b => { b.classList.remove('border-emerald-500','text-white'); b.classList.add('border-transparent','text-slate-400'); });
+        btn.classList.add('border-emerald-500','text-white'); btn.classList.remove('border-transparent','text-slate-400');
+    });
+});
+
+// Fermeture modales au clic sur le backdrop
+document.getElementById('confirm-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('confirm-modal')) {
+        document.getElementById('confirm-cancel').click();
+    }
+});
+document.getElementById('note-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('note-modal')) {
+        document.getElementById('note-modal-close').click();
+    }
+});
+
+// Panel
+document.getElementById('open-admin-btn').addEventListener('click',  () => document.getElementById('admin-panel').classList.remove('panel-hidden'));
+document.getElementById('close-admin-btn').addEventListener('click', () => document.getElementById('admin-panel').classList.add('panel-hidden'));
+
+// Image preview
+document.getElementById('ai-image-input').addEventListener('change', e => {
+    const file=e.target.files[0]; if(!file) return;
+    const r=new FileReader();
+    r.onload = ev => { document.getElementById('preview-img-tag').src=ev.target.result; document.getElementById('image-preview-container').classList.remove('hidden'); };
+    r.readAsDataURL(file);
+});
+
+// Thème
+document.getElementById('theme-selector').addEventListener('change', e => { appState.theme=e.target.value; save(); });
+
+// Echap pour fermer le panel et les modales
+document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const panel = document.getElementById('admin-panel');
+    if (!panel.classList.contains('panel-hidden')) { panel.classList.add('panel-hidden'); return; }
+    if (document.getElementById('confirm-modal').classList.contains('show')) { document.getElementById('confirm-cancel').click(); return; }
+    if (document.getElementById('note-modal').classList.contains('show'))    { document.getElementById('note-modal-close').click(); }
+});
+
+// Init
+renderAll();
+</script>
+</body>
+</html>
